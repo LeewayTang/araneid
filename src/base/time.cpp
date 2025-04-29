@@ -44,26 +44,6 @@ std::string TimeDelta::ToString() const {
   return ss.str();
 }
 
-TimePoint TimePoint::operator+(const TimeDelta& delta) const {
-  return TimePoint(time_point_ + delta.ToChrono<>());
-}
-
-TimePoint TimePoint::operator-(const TimeDelta& delta) const {
-  return TimePoint(time_point_ - delta.ToChrono<>());
-}
-
-TimeDelta TimePoint::operator-(const TimePoint& other) const {
-  return TimeDelta(time_point_ - other.time_point_);
-}
-
-bool TimePoint::operator<(const TimePoint& other) const {
-  return time_point_ < other.time_point_;
-}
-
-bool TimePoint::operator==(const TimePoint& other) const {
-  return time_point_ == other.time_point_;
-}
-
 std::string TimePoint::ToString() const {
   auto in_time_t = std::chrono::system_clock::to_time_t(time_point_);
   std::tm tm;

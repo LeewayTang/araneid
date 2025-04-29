@@ -68,6 +68,9 @@ class TimeDelta {
   bool operator<(const TimeDelta& other) const {
     return duration_ < other.duration_;
   }
+  bool operator>(const TimeDelta& other) const {
+    return duration_ > other.duration_;
+  }
   // 时间格式化
   std::string ToString() const;
 
@@ -92,15 +95,28 @@ class TimePoint {
   explicit TimePoint(const std::chrono::time_point<ClockType, Duration>& tp)
       : time_point_(tp) {}
 
-  // 时间算术
-  TimePoint operator+(const TimeDelta& delta) const;
-  TimePoint operator-(const TimeDelta& delta) const;
-  TimeDelta operator-(const TimePoint& other) const;
+  TimePoint operator+(const TimeDelta& delta) const {
+    return TimePoint(time_point_ + delta.ToChrono());
+  }
+  TimePoint operator-(const TimeDelta& delta) const {
+    return TimePoint(time_point_ - delta.ToChrono());
+  }
+  TimeDelta operator-(const TimePoint& other) const {
+    return TimeDelta(time_point_ - other.time_point_);
+  }
 
   // 比较运算符
-  bool operator<(const TimePoint& other) const;
-  bool operator==(const TimePoint& other) const;
-  // ... 其他比较运算符
+  bool operator<(const TimePoint& other) const {
+    return time_point_ < other.time_point_;
+  }
+  bool operator>(const TimePoint& other) const {
+    return time_point_ > other.time_point_;
+  }
+  bool operator<=(const TimePoint& other) const { return !(*this > other); }
+  bool operator>=(const TimePoint& other) const { return !(*this < other); }
+  bool operator==(const TimePoint& other) const {
+    return time_point_ == other.time_point_;
+  }
 
   // 转换为字符串（UTC时间）
   std::string ToString() const;
