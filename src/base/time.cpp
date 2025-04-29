@@ -1,158 +1,83 @@
 #include "time.hpp"
 
-#include <iostream>
-
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 namespace araneid {
 
-TimeDelta::TimeDelta(std::string time_str) {
-  /**
-   * @brief Parse a time string in different units (e.g., "1h", "1h2m",
-   * "1h2m3s", "1h2m3s4ms", "4ms5us")
-   * @param time_str The time string to parse
-   */
-  // Initialize all time components to zero
-  microseconds_ = 0;
-  milliseconds_ = 0;
-  seconds_ = 0;
-  minutes_ = 0;
-  hours_ = 0;
-  // Parse the time string
+TimeDelta Hours(int64_t hours) { return TimeDelta(std::chrono::hours(hours)); }
 
-  size_t pos = 0;
-  while (pos < time_str.size()) {
-    size_t start = pos;
-    while (pos < time_str.size() && isdigit(time_str[pos])) {
-      ++pos;
-    }
-    if (start == pos) {
-      throw std::invalid_argument("Invalid time format");
-      break;  // No digits found
-    }
-    int value = std::stoi(time_str.substr(start, pos - start));
-    if (pos < time_str.size()) {
-      char unit = time_str[pos++];
-      switch (unit) {
-        case 'h':
-          hours_ += value;
-          break;
-        case 'm':
-          minutes_ += value;
-          break;
-        case 's':
-          seconds_ += value;
-          break;
-        case 'ms':
-          milliseconds_ += value;
-          break;
-        case 'us':
-          microseconds_ += value;
-          break;
-        default:
-          throw std::invalid_argument("Invalid time unit");
-      }
-    }
+TimeDelta Minutes(int64_t minutes) {
+  return TimeDelta(std::chrono::minutes(minutes));
+}
+
+TimeDelta Seconds(int64_t seconds) {
+  return TimeDelta(std::chrono::seconds(seconds));
+}
+
+TimeDelta Millis(int64_t ms) {
+  return TimeDelta(std::chrono::milliseconds(ms));
+}
+
+TimeDelta Micros(int64_t us) {
+  return TimeDelta(std::chrono::microseconds(us));
+}
+
+TimeDelta Nanos(int64_t ns) { return TimeDelta(std::chrono::nanoseconds(ns)); }
+
+// 时间格式化
+std::string TimeDelta::ToString() const {
+  auto ns = Nanos();
+  const int64_t us = ns / 1000;
+  const int64_t ms = us / 1000;
+  const int64_t s = ms / 1000;
+  std::stringstream ss;
+  if (s > 0) {
+    ss << s << "s";
+  } else if (ms > 0) {
+    ss << ms << "ms";
+  } else if (us > 0) {
+    ss << us << "us";
+  } else {
+    ss << ns << "ns";
   }
+  return ss.str();
 }
 
-TimeDelta TimeDelta::operator+(const TimeDelta& other) const {
-  TimeDelta result = zero();
-  result.microseconds_ = microseconds_ + other.microseconds_;
-  result.milliseconds_ = milliseconds_ + other.milliseconds_;
-  result.seconds_ = seconds_ + other.seconds_;
-  result.minutes_ = minutes_ + other.minutes_;
-  result.hours_ = hours_ + other.hours_;
-  return result;
+TimePoint TimePoint::operator+(const TimeDelta& delta) const {
+  return TimePoint(time_point_ + delta.ToChrono<>());
 }
 
-bool TimeDelta::operator==(const TimeDelta& other) const {
-  return microseconds_ == other.microseconds_ &&
-         milliseconds_ == other.milliseconds_ && seconds_ == other.seconds_ &&
-         minutes_ == other.minutes_ && hours_ == other.hours_;
+TimePoint TimePoint::operator-(const TimeDelta& delta) const {
+  return TimePoint(time_point_ - delta.ToChrono<>());
 }
 
-bool TimeDelta::operator!=(const TimeDelta& other) const {
-  return !(*this == other);
+TimeDelta TimePoint::operator-(const TimePoint& other) const {
+  return TimeDelta(time_point_ - other.time_point_);
 }
 
-bool TimeDelta::operator<(const TimeDelta& other) const {
-  if (hours_ != other.hours_) {
-    return hours_ < other.hours_;
-  }
-  if (minutes_ != other.minutes_) {
-    return minutes_ < other.minutes_;
-  }
-  if (seconds_ != other.seconds_) {
-    return seconds_ < other.seconds_;
-  }
-  if (milliseconds_ != other.milliseconds_) {
-    return milliseconds_ < other.milliseconds_;
-  }
-  return microseconds_ < other.microseconds_;
+bool TimePoint::operator<(const TimePoint& other) const {
+  return time_point_ < other.time_point_;
 }
 
-bool TimeDelta::operator>(const TimeDelta& other) const {
-  return !(*this < other) && !(*this == other);
+bool TimePoint::operator==(const TimePoint& other) const {
+  return time_point_ == other.time_point_;
 }
 
-bool TimeDelta::isZero() const {
-  return microseconds_ == 0 && milliseconds_ == 0 && seconds_ == 0 &&
-         minutes_ == 0 && hours_ == 0;
+std::string TimePoint::ToString() const {
+  auto in_time_t = std::chrono::system_clock::to_time_t(time_point_);
+  std::tm tm;
+  gmtime_r(&in_time_t, &tm);  // 线程安全版本（Linux）
+  std::stringstream ss;
+  ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                time_point_.time_since_epoch())
+                .count() %
+            1000;
+  ss << "." << std::setw(3) << std::setfill('0') << ms;
+  return ss.str();
 }
 
-std::string TimeDelta::toString() const {
-  std::string result;
-  if (hours_ > 0) {
-    result += std::to_string(hours_) + "h";
-  }
-  if (minutes_ > 0) {
-    result += std::to_string(minutes_) + "m";
-  }
-  if (seconds_ > 0) {
-    result += std::to_string(seconds_) + "s";
-  }
-  if (milliseconds_ > 0) {
-    result += std::to_string(milliseconds_) + "ms";
-  }
-  if (microseconds_ > 0) {
-    result += std::to_string(microseconds_) + "us";
-  }
-  return result.empty() ? "0s" : result;
-}
-
-std::chrono::microseconds TimeDelta::toMicroseconds() const {
-  return std::chrono::microseconds(microseconds_ + milliseconds_ * 1000 +
-                                   seconds_ * 1000000 + minutes_ * 60000000 +
-                                   hours_ * 3600000000);
-}
-
-Clock::Clock() : current_time_(std::chrono::system_clock::now()) {}
-
-int64_t Clock::GetCurrentTimeInSeconds() const {
-  return std::chrono::duration_cast<std::chrono::seconds>(
-             std::chrono::system_clock::now() - current_time_)
-      .count();
-}
-
-int64_t Clock::GetCurrentTimeInMilliseconds() const {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
-             std::chrono::system_clock::now() - current_time_)
-      .count();
-}
-
-int64_t Clock::GetCurrentTimeInMicroseconds() const {
-  return std::chrono::duration_cast<std::chrono::microseconds>(
-             std::chrono::system_clock::now() - current_time_)
-      .count();
-}
-
-std::string Clock::GetCurrentTime() const {
-  auto now = std::chrono::system_clock::now();
-  auto time_t_now = std::chrono::system_clock::to_time_t(now);
-  std::tm tm_local{};
-  localtime_r(&time_t_now, &tm_local);
-  char buffer[100];
-  std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm_local);
-  return std::string(buffer);
-}
+TimePoint Clock::Now() { return TimePoint(std::chrono::system_clock::now()); }
 
 }  // namespace araneid

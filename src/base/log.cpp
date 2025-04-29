@@ -21,7 +21,7 @@ Logger::Logger() : log_level_(LOG_INFO) {
 
   if (std::filesystem::exists(log_file)) {
     std::filesystem::path backup_file =
-        out_dir / ("araneid_" + Clock::GetCurrentTimestamp() + ".log");
+        out_dir / ("araneid_" + Clock::Now().ToString() + ".log");
     try {
       std::filesystem::rename(log_file, backup_file);
     } catch (const std::filesystem::filesystem_error& e) {
@@ -34,7 +34,7 @@ Logger::Logger() : log_level_(LOG_INFO) {
   if (!log_stream_.is_open()) {
     std::cerr << "Failed to open log file: " << log_file << std::endl;
   } else {
-    log_stream_ << "=== Logger is created at " << Clock::GetCurrentTimestamp()
+    log_stream_ << "=== Logger is created at " << Clock::Now().ToString()
                 << " ===" << std::endl;
   }
 }
@@ -62,7 +62,7 @@ LogMessage::LogMessage(LogLevel level, const std::string& file, int line)
   // extract the file name from the full path
   std::filesystem::path file_path(file);
   std::string file_name = file_path.filename().string();
-  message_stream_ << "[" << Clock::GetCurrentTimestamp() << "] "
+  message_stream_ << "[" << Clock::Now().ToString() << "] "
                   << "[" << file_name << ":" << line << "] ";
   switch (level_) {
     case LOG_DEBUG:

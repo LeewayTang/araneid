@@ -2,16 +2,16 @@
 #define ARANEID_BASE_CALLBACK_HPP
 
 #include <iostream>
+#include <memory>
 #include <queue>
 #include <tuple>
 #include <utility>
-#include <memory>
 namespace araneid {
 
 class CallbackBase {
  public:
   virtual ~CallbackBase() = default;
-  virtual void execute() = 0;
+  virtual void Execute() = 0;
 };
 
 // 具体回调类（继承基类）
@@ -76,26 +76,6 @@ template <typename T, typename R, typename... Args>
 Callback(R (T::*)(Args...) const, T*, Args...)
     -> Callback<T, R (T::*)(Args...) const>;
 
-// 回调队列
-class CallbackQueue {
- public:
-  // 添加回调到队列
-  void Enqueue(std::unique_ptr<CallbackBase> callback) {
-    queue_.push(std::move(callback));
-  }
-
-  // 执行所有回调
-  void ExecuteAll() {
-    while (!queue_.empty()) {
-      auto& callback = queue_.front();
-      callback->execute();
-      queue_.pop();
-    }
-  }
-
- private:
-  std::queue<std::unique_ptr<CallbackBase>> queue_;
-};
 
 }  // namespace araneid
 
