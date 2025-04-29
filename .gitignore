@@ -1,0 +1,73 @@
+# 编译生成的二进制文件和对象文件
+*.exe
+*.a
+*.so
+*.dll
+*.out
+*.o
+*.obj
+*.ilk
+*.pdb
+
+# 构建目录（CMake/Make/ninja等生成的文件）
+build/
+out/
+bin/
+obj/
+Debug/
+Release/
+x64/
+*.sln
+*.vcxproj*
+*.cmake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+ninja.build
+compile_commands.json  # 如果不需要保留编译数据库
+
+# IDE配置文件和缓存
+.vscode/
+.idea/
+.vs/
+*.user
+*.suo
+*.ncb
+
+# 依赖目录（第三方库）
+deps/
+vendor/
+.conan/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 测试相关输出
+*.gcno
+*.gcda
+coverage/
+
+# 调试文件
+core
+*.stackdump
+valgrind.log
+
+# 临时文件
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# 日志文件
+*.log
+
+# 自动生成的文档
+docs/html/
+docs/latex/
+
+# 包管理工具文件
+conan.lock
+conanbuildinfo.txt
+conaninfo.txt
