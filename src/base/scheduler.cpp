@@ -43,7 +43,7 @@ TimedTaskQueue::~TimedTaskQueue() {
 }
 
 void TimedTaskQueue::Start() {
-  if (stop_.exchange(false)) {
+  if (!stop_.exchange(false)) {
     return;
   }
   worker_thread_ = std::thread([this]() {
@@ -52,15 +52,15 @@ void TimedTaskQueue::Start() {
       if (task_queue_.empty()) {
         cv_.wait(lock, [this] { return stop_ || !task_queue_.empty(); });
       }
-      if (stop_ || task_queue_.empty()) {
+      if (stop_) {
         return;
       }
+      if (task_queue_.empty()) {
+        continue;
+      }
       TimePoint next_trigger = task_queue_.top().GetExecutionTime();
-      if (cv_.wait_until(lock,
-                         next_trigger.ToChrono<std::chrono::system_clock>()) ==
+      if (cv_.wait_until(lock, next_trigger.ToChrono()) ==
           std::cv_status::timeout) {
-        ProcessExpiredTasks(lock);
-      } else {
         ProcessExpiredTasks(lock);
       }
     }
@@ -86,5 +86,6 @@ void TimedTaskQueue::ProcessExpiredTasks(std::unique_lock<std::mutex>& lock) {
       task_queue_.push(task);
     }
   }
+}
 
 }  // namespace araneid
