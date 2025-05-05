@@ -8,21 +8,17 @@ namespace araneid {
 
 class TimeDelta {
  public:
-  // 默认构造（0时长）
   TimeDelta() = default;
 
-  // 从chrono::duration构造
   template <typename Rep, typename Period>
   explicit TimeDelta(const std::chrono::duration<Rep, Period>& duration)
       : duration_(duration) {}
 
-  // 转换为chrono::duration（兼容std库）
   template <typename Duration = std::chrono::nanoseconds>
   Duration ToChrono() const {
     return std::chrono::duration_cast<Duration>(duration_);
   }
 
-  // 常用单位转换
   int64_t Hours() const {
     return std::chrono::duration_cast<std::chrono::hours>(duration_).count();
   }
@@ -45,7 +41,6 @@ class TimeDelta {
         .count();
   }
 
-  // 运算符重载
   TimeDelta operator+(const TimeDelta& other) const {
     return TimeDelta(duration_ + other.duration_);
   }
@@ -61,7 +56,6 @@ class TimeDelta {
     return *this;
   }
 
-  // 比较运算符
   bool operator==(const TimeDelta& other) const {
     return duration_ == other.duration_;
   }
@@ -71,26 +65,42 @@ class TimeDelta {
   bool operator>(const TimeDelta& other) const {
     return duration_ > other.duration_;
   }
-  // 时间格式化
+  bool operator<=(const TimeDelta& other) const {
+    return duration_ <= other.duration_;
+  }
+  bool operator>=(const TimeDelta& other) const {
+    return duration_ >= other.duration_;
+  }
   std::string ToString() const;
 
- private:
-  std::chrono::nanoseconds duration_{0};  // 内部存储为纳秒精度
-};
+  static TimeDelta Hours(int64_t hours) {
+    return TimeDelta(std::chrono::hours(hours));
+  }
+  static TimeDelta Minutes(int64_t minutes) {
+    return TimeDelta(std::chrono::minutes(minutes));
+  }
+  static TimeDelta Seconds(int64_t seconds) {
+    return TimeDelta(std::chrono::seconds(seconds));
+  }
+  static TimeDelta Millis(int64_t ms) {
+    return TimeDelta(std::chrono::milliseconds(ms));
+  }
+  static TimeDelta Micros(int64_t us) {
+    return TimeDelta(std::chrono::microseconds(us));
+  }
+  static TimeDelta Nanos(int64_t ns) {
+    return TimeDelta(std::chrono::nanoseconds(ns));
+  }
+  static TimeDelta Zero() { return TimeDelta(std::chrono::nanoseconds(0)); }
 
-// 便捷构造函数（工厂函数）
-TimeDelta Hours(int64_t hours);
-TimeDelta Minutes(int64_t minutes);
-TimeDelta Seconds(int64_t seconds);
-TimeDelta Millis(int64_t ms);
-TimeDelta Micros(int64_t us);
-TimeDelta Nanos(int64_t ns);
+ private:
+  std::chrono::nanoseconds duration_{0};
+};
 
 class TimePoint {
  public:
   TimePoint() = default;
 
-  // 从chrono::time_point构造
   template <typename ClockType, typename Duration>
   explicit TimePoint(const std::chrono::time_point<ClockType, Duration>& tp)
       : time_point_(tp) {}
@@ -105,7 +115,6 @@ class TimePoint {
     return TimeDelta(time_point_ - other.time_point_);
   }
 
-  // 比较运算符
   bool operator<(const TimePoint& other) const {
     return time_point_ < other.time_point_;
   }
@@ -118,24 +127,22 @@ class TimePoint {
     return time_point_ == other.time_point_;
   }
 
-  // 转换为字符串（UTC时间）
   std::string ToString() const;
 
-  // 转换为chrono::time_point（兼容std库）
   template <typename ClockType = std::chrono::system_clock>
   std::chrono::time_point<ClockType> ToChrono() const {
     return std::chrono::time_point<ClockType>(time_point_);
   }
 
  private:
-  std::chrono::system_clock::time_point time_point_;  // 默认使用系统时钟
-  friend class Clock;  // 允许Clock类访问内部time_point_
+  std::chrono::system_clock::time_point time_point_;
+  friend class Clock;
 };
 
 class Clock {
  public:
-  static TimePoint Now();  // 默认系统时钟
+  static TimePoint Now();
 };
 }  // namespace araneid
 
-#endif
+#endif  // ARANEID_BASE_TIME_HPP

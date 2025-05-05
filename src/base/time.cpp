@@ -25,7 +25,6 @@ TimeDelta Micros(int64_t us) {
 
 TimeDelta Nanos(int64_t ns) { return TimeDelta(std::chrono::nanoseconds(ns)); }
 
-// 时间格式化
 std::string TimeDelta::ToString() const {
   auto ns = Nanos();
   const int64_t us = ns / 1000;

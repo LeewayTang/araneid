@@ -77,14 +77,12 @@ LogMessage::LogMessage(LogLevel level, const std::string& file, int line)
     case LOG_ERROR:
       message_stream_ << "[ERROR] ";
       break;
-    case LOG_FATAL:
-      message_stream_ << "[FATAL] ";
-      break;
   }
 }
 
 LogMessage::~LogMessage() {
   Logger::GetInstance().WriteLog(level_, message_stream_.str());
+  if (level_ == LOG_ERROR) std::exit(1);
 }
 
 }  // namespace araneid

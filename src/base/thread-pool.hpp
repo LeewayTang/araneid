@@ -1,6 +1,10 @@
 #ifndef ARANEID_BASE_THREAD_POOL_HPP
 #define ARANEID_BASE_THREAD_POOL_HPP
 
+#include <atomic>
+#include <condition_variable>
+#include <thread>
+
 #include "callback.hpp"
 
 namespace araneid {
@@ -19,4 +23,4 @@ class ThreadPool {
 };
 }  // namespace araneid
 
-#endif
+#endif  // ARANEID_BASE_THREAD_POOL_HPP

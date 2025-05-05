@@ -5,7 +5,7 @@
 #include <sstream>
 
 namespace araneid {
-enum LogLevel { LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL };
+enum LogLevel { LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR};
 
 class Logger {
  public:
@@ -50,7 +50,5 @@ class LogMessage {
   araneid::LogMessage(araneid::LOG_WARNING, __FILE__, __LINE__).GetStream()
 #define ALOG_ERROR \
   araneid::LogMessage(araneid::LOG_ERROR, __FILE__, __LINE__).GetStream()
-#define ALOG_FATAL \
-  araneid::LogMessage(araneid::LOG_FATAL, __FILE__, __LINE__).GetStream()
 
-#endif
+#endif // ARANEID_BASE_LOG_HPP

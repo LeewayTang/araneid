@@ -1,5 +1,6 @@
 #include "thread-pool.hpp"
 
+#include <mutex>
 #include <thread>
 namespace araneid {
 

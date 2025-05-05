@@ -6,9 +6,10 @@
 #include "time.hpp"
 
 namespace araneid {
+class DataRate;
 class DataSize {
  public:
-  explicit DataSize(uint64_t bits) : bits_(bits) {}
+  explicit DataSize(uint64_t bits) : bits_(bits > 0 ? bits : 1) {}
 
   uint64_t Bits() const { return bits_; }
   uint64_t Bytes() const { return bits_ / 8; }
@@ -29,6 +30,20 @@ class DataSize {
     return DataSize(gigabytes * 8589934592);
   }
 
+  bool operator==(const DataSize& other) const { return bits_ == other.bits_; }
+  bool operator!=(const DataSize& other) const { return bits_ != other.bits_; }
+  bool operator<(const DataSize& other) const { return bits_ < other.bits_; }
+  bool operator>(const DataSize& other) const { return bits_ > other.bits_; }
+  bool operator<=(const DataSize& other) const { return bits_ <= other.bits_; }
+  bool operator>=(const DataSize& other) const { return bits_ >= other.bits_; }
+  DataSize& operator+=(const DataSize& other) {
+    bits_ += other.bits_;
+    return *this;
+  }
+  DataSize& operator-=(const DataSize& other) {
+    bits_ -= other.bits_;
+    return *this;
+  }
   DataSize operator+(const DataSize& other) const {
     return DataSize(bits_ + other.bits_);
   }
@@ -38,9 +53,8 @@ class DataSize {
   DataSize operator*(double factor) const {
     return DataSize(static_cast<uint64_t>(bits_ * factor));
   }
-  DataRate operator/(const TimeDelta& time_delta) const {
-    return DataRate(1.0 * bits_ / time_delta.Millis());
-  }
+  DataRate operator/(const TimeDelta& time_delta) const;
+  TimeDelta operator/(const DataRate& data_rate) const;
 
  private:
   uint64_t bits_;
@@ -49,7 +63,7 @@ class DataSize {
 class DataRate {
  public:
   explicit DataRate(double bits_per_second)
-      : bits_per_second_(bits_per_second) {}
+      : bits_per_second_(bits_per_second > 0 ? bits_per_second : 1) {}
 
   double BitsPerSecond() const { return bits_per_second_; }
   double BytesPerSecond() const { return bits_per_second_ / 8; }
@@ -84,6 +98,41 @@ class DataRate {
   DataSize operator*(const TimeDelta& time_delta) const {
     return DataSize(
         static_cast<uint64_t>(bits_per_second_ * time_delta.Millis()));
+  }
+
+  bool operator==(const DataRate& other) const {
+    return bits_per_second_ == other.bits_per_second_;
+  }
+  bool operator!=(const DataRate& other) const {
+    return bits_per_second_ != other.bits_per_second_;
+  }
+  bool operator<(const DataRate& other) const {
+    return bits_per_second_ < other.bits_per_second_;
+  }
+  bool operator>(const DataRate& other) const {
+    return bits_per_second_ > other.bits_per_second_;
+  }
+  bool operator<=(const DataRate& other) const {
+    return bits_per_second_ <= other.bits_per_second_;
+  }
+  bool operator>=(const DataRate& other) const {
+    return bits_per_second_ >= other.bits_per_second_;
+  }
+  DataRate& operator+=(const DataRate& other) {
+    bits_per_second_ += other.bits_per_second_;
+    return *this;
+  }
+  DataRate& operator-=(const DataRate& other) {
+    bits_per_second_ -= other.bits_per_second_;
+    return *this;
+  }
+  DataRate& operator*=(TimeDelta& time_delta) {
+    bits_per_second_ *= time_delta.Millis();
+    return *this;
+  }
+  DataRate& operator/=(TimeDelta& time_delta) {
+    bits_per_second_ /= time_delta.Millis();
+    return *this;
   }
 
  private:
