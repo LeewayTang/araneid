@@ -12,12 +12,12 @@ P.S. "araneid" is from "araneidae", a spider family in which the members are bea
    ```
 2. Your applications to run in LXC containers.
 3. The shell scripts to launch your applications in LXC containers, which should be executable.
-4. Put your applications and scripts in the `desktop/` directory. Araneid will find them.
+4. Put your applications and scripts in a directory like `lxc-mount-example`, pass the filepath as argument and LXC will be created based on it. Ensure all services and applications are launched by run.sh, so Araneid can run the simulation.
 
 ## Explanation
 Araneid provides an environment for developers to configure different network conditions, and the packets are produced and consumed by the applications of their own. 
 
-You might be curious about how packets are delivered between your applications and araneid. TAP device is the answer, because it is the bridge between the network and your applications. But it's a little bit troublesome to set up TAP devices and launch LXC containers before running araneid, I haven't found a better way to do it. So do it by yourself please.
+You might be curious about how packets are delivered between your applications and araneid. TAP device is the answer, because it is the bridge between the network and your applications. 
 
 ## Usage
 > 2025-05-05: I haven't write a demo yet, just build the static library and use it please. Later I will write a demo to show how to use it.
